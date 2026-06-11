@@ -16,7 +16,60 @@ class GoldRushGame {
         };
         this.enemies = [];
         this.loadSounds();
+        this.loadImages();
         this.initUI();
+    }
+
+    loadImages() {
+        this.tileset = new Image();
+        this.tileset.src = 'assets/images/tileset.png';
+        this.tileset.onload = () => {
+            this.render();
+        };
+    }
+
+    render() {
+        const canvas = document.getElementById('game-canvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        // Match canvas size to display size
+        canvas.width = canvas.clientWidth;
+        canvas.height = canvas.clientHeight;
+
+        ctx.fillStyle = '#000';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const tileSize = 32; // Scaling up the 16x16 tiles
+        const centerX = canvas.width / 2;
+        const centerY = canvas.height / 2;
+
+        // Draw basic 5x5 grid around player
+        for (let x = -2; x <= 2; x++) {
+            for (let y = -2; y <= 2; y++) {
+                // Floor tile (Example index: 0, 0 on sheet)
+                this.drawTile(ctx, 0, 0, centerX + (x * tileSize), centerY - (y * tileSize), tileSize);
+            }
+        }
+
+        // Draw Player (Example index: 24, 0 on sheet)
+        this.drawTile(ctx, 24, 0, centerX, centerY, tileSize);
+    }
+
+    drawTile(ctx, sheetX, sheetY, x, y, size) {
+        const sourceSize = 16;
+        const spacing = 1;
+        ctx.drawImage(
+            this.tileset,
+            sheetX * (sourceSize + spacing),
+            sheetY * (sourceSize + spacing),
+            sourceSize,
+            sourceSize,
+            x - size / 2,
+            y - size / 2,
+            size,
+            size
+        );
     }
 
     loadSounds() {
@@ -131,6 +184,7 @@ class GoldRushGame {
     handleAction(result) {
         if (result.msg) this.log(result.msg);
         this.updateStats();
+        this.render();
     }
 
     log(msg) {
