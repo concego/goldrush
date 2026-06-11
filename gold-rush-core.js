@@ -21,27 +21,57 @@ class GoldRushGame {
         // UI Bindings
         this.updateStats();
 
+        // Keyboard Mapping (for PC/NVDA)
+        window.addEventListener('keydown', (e) => {
+            switch(e.key) {
+                case 'ArrowUp':
+                case 'w':
+                case 'W':
+                    this.handleAction(this.movePlayer(this.player.position.facing));
+                    break;
+                case 'ArrowDown':
+                case 's':
+                case 'S':
+                    this.handleAction(this.movePlayer(this.getOppositeDirection(this.player.position.facing)));
+                    break;
+                case 'ArrowLeft':
+                case 'a':
+                case 'A':
+                    this.turn('Left');
+                    break;
+                case 'ArrowRight':
+                case 'd':
+                case 'D':
+                    this.turn('Right');
+                    break;
+                case ' ':
+                case 'Enter':
+                    this.log("You swing your blade at the shadows. Nothing there... yet.");
+                    break;
+                case 'f':
+                case 'F':
+                    this.log("Scanning... The wind blows from the North. The path ahead is clear.");
+                    break;
+            }
+        });
+
         document.getElementById('btn-up').addEventListener('click', () => this.handleAction(this.movePlayer(this.player.position.facing)));
         document.getElementById('btn-down').addEventListener('click', () => this.handleAction(this.movePlayer(this.getOppositeDirection(this.player.position.facing))));
         
-        document.getElementById('btn-left').addEventListener('click', () => {
-            const next = this.rotateLeft(this.player.position.facing);
-            this.player.position.facing = next;
-            this.log(`Facing ${next}`);
-            this.updateStats();
-        });
-
-        document.getElementById('btn-right').addEventListener('click', () => {
-            const next = this.rotateRight(this.player.position.facing);
-            this.player.position.facing = next;
-            this.log(`Facing ${next}`);
-            this.updateStats();
-        });
+        document.getElementById('btn-left').addEventListener('click', () => this.turn('Left'));
+        document.getElementById('btn-right').addEventListener('click', () => this.turn('Right'));
 
         document.getElementById('btn-scan').addEventListener('click', () => this.log("Scanning... The wind blows from the North. The path ahead is clear."));
         document.getElementById('btn-attack').addEventListener('click', () => this.log("You swing your blade at the shadows. Nothing there... yet."));
         document.getElementById('btn-interact').addEventListener('click', () => this.log("Nothing to interact with here."));
         document.getElementById('btn-inventory').addEventListener('click', () => this.log(`Inventory: ${this.player.inventory.gold} Gold. Heavy is the head that wears the debt.`));
+    }
+
+    turn(side) {
+        const next = side === 'Left' ? this.rotateLeft(this.player.position.facing) : this.rotateRight(this.player.position.facing);
+        this.player.position.facing = next;
+        this.log(`Facing ${next}`);
+        this.updateStats();
     }
 
     handleAction(result) {
