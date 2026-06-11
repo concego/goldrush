@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Universo de Bolso - MVP Acessível</title>
+    <style>
+        body { font-family: sans-serif; padding: 20px; background: #121212; color: #e0e0e0; }
+        h1, h2 { color: #bb86fc; }
+        .ficha { border: 1px solid #333; padding: 15px; border-radius: 8px; background: #1e1e1e; margin-bottom: 20px; }
+        .atributo { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
+        button { background: #03dac6; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:focus { outline: 3px solid #bb86fc; }
+        .log { background: #000; padding: 10px; border-radius: 4px; font-family: monospace; height: 100px; overflow-y: auto; color: #0f0; }
+        .controls { margin-top: 10px; }
+        input[type="number"] { width: 50px; background: #333; color: #fff; border: 1px solid #555; padding: 5px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Universo de Bolso 🐉</h1>
+        <p>Hub de RPG Acessível (PWA Preview)</p>
+    </header>
+
+    <main id="app">
+        <section class="ficha" aria-labelledby="char-name">
+            <h2 id="char-name">Dragão de São João (3D&T Alpha)</h2>
+            
+            <div id="attributes-list">
+                <!-- Atributos serão injetados aqui -->
+            </div>
+
+            <div class="controls">
+                <h3>Recursos</h3>
+                <div class="atributo">
+                    <span>PV (Pontos de Vida)</span>
+                    <div>
+                        <button onclick="changeValue('pv', -1)" aria-label="Remover 1 PV">-1</button>
+                        <span id="pv-val" aria-live="polite">10</span>
+                        <button onclick="changeValue('pv', 1)" aria-label="Adicionar 1 PV">+1</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section aria-labelledby="log-title">
+            <h2 id="log-title">Resultado dos Dados</h2>
+            <div id="dice-log" class="log" role="log" aria-live="assertive">
+                Aguardando rolagem...
+            </div>
+            <button onclick="rollDice(6)" style="margin-top: 10px; width: 100%;">Rolar 1d6 (Teste Padrão)</button>
+        </section>
+    </main>
+
+    <script>
+        const charData = {
+            name: "Dragão de São João",
+            stats: { "Força": 2, "Habilidade": 3, "Resistência": 2, "Armadura": 1, "Poder de Fogo": 0 },
+            pv: 10
+        };
+
+        function init() {
+            const list = document.getElementById('attributes-list');
+            for (const [key, val] of Object.entries(charData.stats)) {
+                const div = document.createElement('div');
+                div.className = 'atributo';
+                div.innerHTML = `
+                    <span>${key}: ${val}</span>
+                    <button onclick="rollTest('${key}', ${val})" aria-label="Rolar teste de ${key}">Rolar ${key}</button>
+                `;
+                list.appendChild(div);
+            }
+        }
+
+        function rollTest(name, val) {
+            const result = Math.floor(Math.random() * 6) + 1;
+            const total = val + result;
+            const log = document.getElementById('dice-log');
+            log.innerHTML = `> Teste de ${name}: Dado ${result} + Base ${val} = <strong>${total}</strong><br>` + log.innerHTML;
+        }
+
+        function rollDice(sides) {
+            const result = Math.floor(Math.random() * sides) + 1;
+            const log = document.getElementById('dice-log');
+            log.innerHTML = `> Rolagem livre: 1d${sides} resultou em <strong>${result}</strong><br>` + log.innerHTML;
+        }
+
+        function changeValue(type, delta) {
+            charData[type] += delta;
+            document.getElementById(`${type}-val`).innerText = charData[type];
+        }
+
+        init();
+    </script>
+</body>
+</html>
