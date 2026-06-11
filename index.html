@@ -1,97 +1,62 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Universo de Bolso - MVP Acessível</title>
-    <style>
-        body { font-family: sans-serif; padding: 20px; background: #121212; color: #e0e0e0; }
-        h1, h2 { color: #bb86fc; }
-        .ficha { border: 1px solid #333; padding: 15px; border-radius: 8px; background: #1e1e1e; margin-bottom: 20px; }
-        .atributo { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border-bottom: 1px solid #333; padding-bottom: 5px; }
-        button { background: #03dac6; border: none; padding: 10px; border-radius: 4px; cursor: pointer; font-weight: bold; }
-        button:focus { outline: 3px solid #bb86fc; }
-        .log { background: #000; padding: 10px; border-radius: 4px; font-family: monospace; height: 100px; overflow-y: auto; color: #0f0; }
-        .controls { margin-top: 10px; }
-        input[type="number"] { width: 50px; background: #333; color: #fff; border: 1px solid #555; padding: 5px; text-align: center; }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
+    <meta name="theme-color" content="#1a1a1a">
+    <link rel="manifest" href="manifest.json">
+    <title>Gold Rush: The Debtor's Escape</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div id="game-container">
+        <!-- Status Bar -->
+        <header id="status-bar" role="status">
+            <div class="stat">Gold: <span id="gold-val">1500</span></div>
+            <div class="stat">HP: <span id="hp-val">18/18</span></div>
+            <div class="stat">Debt: <span id="debt-val">5000</span></div>
+            <div class="stat" id="facing-display">Facing: North</div>
+        </header>
 
-    <header>
-        <h1>Universo de Bolso 🐉</h1>
-        <p>Hub de RPG Acessível (PWA Preview)</p>
-    </header>
-
-    <main id="app">
-        <section class="ficha" aria-labelledby="char-name">
-            <h2 id="char-name">Dragão de São João (3D&T Alpha)</h2>
-            
-            <div id="attributes-list">
-                <!-- Atributos serão injetados aqui -->
-            </div>
-
-            <div class="controls">
-                <h3>Recursos</h3>
-                <div class="atributo">
-                    <span>PV (Pontos de Vida)</span>
-                    <div>
-                        <button onclick="changeValue('pv', -1)" aria-label="Remover 1 PV">-1</button>
-                        <span id="pv-val" aria-live="polite">10</span>
-                        <button onclick="changeValue('pv', 1)" aria-label="Adicionar 1 PV">+1</button>
+        <main id="ui-layout">
+            <!-- Left Panel: Movement & Navigation -->
+            <section id="movement-panel" aria-label="Movement Controls">
+                <div class="control-group">
+                    <button id="btn-up" aria-label="Move Forward">Forward</button>
+                    <div class="rotation-controls">
+                        <button id="btn-left" aria-label="Turn Left">Turn Left</button>
+                        <button id="btn-right" aria-label="Turn Right">Turn Right</button>
                     </div>
+                    <button id="btn-down" aria-label="Step Back">Back</button>
                 </div>
-            </div>
-        </section>
+                <button id="btn-scan" class="utility-btn" aria-label="Auto-Scan Surroundings">Scan</button>
+            </section>
 
-        <section aria-labelledby="log-title">
-            <h2 id="log-title">Resultado dos Dados</h2>
-            <div id="dice-log" class="log" role="log" aria-live="assertive">
-                Aguardando rolagem...
-            </div>
-            <button onclick="rollDice(6)" style="margin-top: 10px; width: 100%;">Rolar 1d6 (Teste Padrão)</button>
-        </section>
-    </main>
+            <!-- Center: Visual Viewport (Placeholder) -->
+            <section id="viewport" aria-hidden="true">
+                <canvas id="game-canvas"></canvas>
+                <div id="visual-overlay"></div>
+            </section>
 
+            <!-- Right Panel: Actions -->
+            <section id="action-panel" aria-label="Action Controls">
+                <button id="btn-attack" class="action-btn" aria-label="Attack">Attack</button>
+                <button id="btn-interact" class="action-btn" aria-label="Interact">Interact</button>
+                <button id="btn-inventory" class="utility-btn" aria-label="Inventory">Inventory</button>
+            </section>
+        </main>
+
+        <!-- ARIA Live Log -->
+        <div id="game-log" role="log" aria-live="polite" aria-relevant="additions">
+            Welcome to the depths, Rogue. Escaping is the only way to pay your debt.
+        </div>
+    </div>
+
+    <script src="gold-rush-core.js"></script>
     <script>
-        const charData = {
-            name: "Dragão de São João",
-            stats: { "Força": 2, "Habilidade": 3, "Resistência": 2, "Armadura": 1, "Poder de Fogo": 0 },
-            pv: 10
-        };
-
-        function init() {
-            const list = document.getElementById('attributes-list');
-            for (const [key, val] of Object.entries(charData.stats)) {
-                const div = document.createElement('div');
-                div.className = 'atributo';
-                div.innerHTML = `
-                    <span>${key}: ${val}</span>
-                    <button onclick="rollTest('${key}', ${val})" aria-label="Rolar teste de ${key}">Rolar ${key}</button>
-                `;
-                list.appendChild(div);
-            }
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
         }
-
-        function rollTest(name, val) {
-            const result = Math.floor(Math.random() * 6) + 1;
-            const total = val + result;
-            const log = document.getElementById('dice-log');
-            log.innerHTML = `> Teste de ${name}: Dado ${result} + Base ${val} = <strong>${total}</strong><br>` + log.innerHTML;
-        }
-
-        function rollDice(sides) {
-            const result = Math.floor(Math.random() * sides) + 1;
-            const log = document.getElementById('dice-log');
-            log.innerHTML = `> Rolagem livre: 1d${sides} resultou em <strong>${result}</strong><br>` + log.innerHTML;
-        }
-
-        function changeValue(type, delta) {
-            charData[type] += delta;
-            document.getElementById(`${type}-val`).innerText = charData[type];
-        }
-
-        init();
     </script>
 </body>
 </html>
